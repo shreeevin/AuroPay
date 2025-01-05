@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AuroPay")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+76de892f17647fb730dfc2b35be45565235f14bf")]
 [assembly: System.Reflection.AssemblyProductAttribute("AuroPay")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AuroPay")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,0 +1,46 @@
+## Ignore build output
+bin/
+obj/
+
+## Ignore User-specific files
+.vs/
+.vscode/
+.idea/
+
+## Ignore temporary files from Visual Studio
+# User-specific files
+.vs2019/
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows Installer files for NuGet
+packages/
+
+# User-specific files from .NET Core
+project.lock.json
+project.fragment.lock.json
+
+# .NET Core specific
+# ASP.NET temporary files
+project.json
+wwwroot/
+
+# Ignore .NET Core debug symbols and directories
+*.pdb
+*.mdb
+
+# Ignore ReSharper files
+.idea/
+.idea/*
+
+# JetBrains Rider config
+.idea/.idea
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
