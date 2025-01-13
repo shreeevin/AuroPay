@@ -69,5 +69,12 @@ namespace AuroPay.Helpers
                 };
             }
         }
+
+        public static string GetSourceNameByCode(string code, string sourceScope)
+        {           
+            var sources = GetSources(sourceScope);
+            var source = sources.FirstOrDefault(s => s.Code == code);
+            return source?.Name ?? "Unknown Source";
+        }
     }
 }

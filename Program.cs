@@ -1,5 +1,4 @@
 using AuroPay.Database;
-
 using AuroPay.Controllers;
 
 namespace AuroPay

@@ -9,15 +9,22 @@ namespace AuroPay.Middleware
         {
             bool isLoggedIn =  Session.GetInstance().IsLoggedIn();
 
-            if(scope == "auth"){
-                if(isLoggedIn){
+            var loginScreenForm = LoginRoute.GetForm();
+            var homeScreenForm = HomeRoute.GetForm();
+            var onboardScreenForm = OnboardRoute.GetForm();
+
+            if(scope == "auth")
+            {
+                if(isLoggedIn)
+                {
                     bool isConfigured = AuthService.IsConfigured();
 
-                    if(isConfigured){
-                        var homeScreenForm = HomeRoute.GetForm();
+                    if(isConfigured)
+                    {
                         RouterService.NavigateTo(currentForm, homeScreenForm.GetType());
-                    } else {
-                        var onboardScreenForm = OnboardRoute.GetForm();
+                    } 
+                    else 
+                    {
                         RouterService.NavigateTo(currentForm, onboardScreenForm.GetType());
                     }
 
@@ -27,12 +34,13 @@ namespace AuroPay.Middleware
             }
 
             if(scope == "default"){
-                if(!isLoggedIn){
-                    var loginScreenForm = LoginRoute.GetForm();
+                if(!isLoggedIn)
+                {
                     RouterService.NavigateTo(currentForm, loginScreenForm.GetType());
-                } 
-                
-                next();
+                } else
+                {
+                    next();
+                }                
             }
         }
     }

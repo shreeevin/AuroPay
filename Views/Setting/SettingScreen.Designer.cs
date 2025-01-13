@@ -1,6 +1,7 @@
 using AuroPay.Helpers;
 using AuroPay.Components;
 using AuroPay.Controllers;
+using AuroPay.Components.Assistants;
 
 namespace AuroPay.Views.Setting
 {
@@ -36,15 +37,9 @@ namespace AuroPay.Views.Setting
             goBackTextLabel = new Label();
 
             this.SuspendLayout();
-            settingPanel.SuspendLayout();
+            ScreenHelper.SetupScreen(this, "AuroPay - Setting");
 
-            this.MinimumSize = new Size(800, 450);
-            this.ClientSize = new Size(800, 450);
-            this.WindowState = FormWindowState.Maximized;
-            this.Name = "AuroPay - Setting";
-            this.Text = "AuroPay - Setting";
-            this.BackColor = Color.White;
-            this.Icon = new Icon("Resources/AppIcon/icon.ico");
+            settingPanel.SuspendLayout();
 
             settingPanel.Dock = DockStyle.Right;
             settingPanel.Width = (int)(this.ClientSize.Width * 0.4);

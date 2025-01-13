@@ -1,26 +1,44 @@
+using AuroPay.Models;
 using AuroPay.Helpers;
 using AuroPay.Services;
 using AuroPay.Controllers;
 using AuroPay.Components.Assistants;
 
-namespace AuroPay.Views.About
+namespace AuroPay.Views.Stats
 {
-    partial class AboutScreen
+    partial class StatsScreen
     {
         private Panel sidebarPanel;
         private Panel contentPanel;
         private PictureBox logoPictureBox;
-        private RichTextBox firstParaLabel;
-        private RichTextBox secondParaLabel;
-        private RichTextBox thirdParaLabel;
-        private Label aboutTitleLabel;
+        private Label transactionTitleLabel;
+        private Label staticsTitleLabel;
+        private Label debtsTitleLabel;
+        private Label balanceTitleLabel;
+        private Label debtStatusTitleLabel;
+        private Label dataVisualizationTitleLabel;
         private Button logoutButton;
         private Button homeButton;
-        private Button statsButton;
         private Button aboutButton;
+        private Button statsButton;
         private Button transactionButton;
         private Button profileButton;
         private Button settingButton;
+        private User currentUser;
+        private int allTransactionCount = 0;
+        private int incomeCount = 0;
+        private int expenseCount = 0;
+        private int debtCount = 0;
+        private int debtCompletedCount = 0;
+        private int debtPendingCount = 0;
+        private decimal incomeBalance = 0;
+        private decimal expenseBalance = 0;
+        private decimal debtBalance = 0;
+        private decimal totalBalance = 0;
+        private decimal totalDebtClearedBalance = 0;
+        private decimal incomeDebtRemaningBalance = 0;
+
+
         private void InitializeComponent()
         {
             sidebarPanel = new Panel();
@@ -28,11 +46,13 @@ namespace AuroPay.Views.About
 
             logoPictureBox = new PictureBox();
 
-            firstParaLabel = new RichTextBox();
-            secondParaLabel = new RichTextBox();
-            thirdParaLabel = new RichTextBox();
+            transactionTitleLabel = new Label();
 
-            aboutTitleLabel = new Label();
+            staticsTitleLabel = new Label();
+            debtsTitleLabel = new Label();
+            balanceTitleLabel =  new Label();
+            debtStatusTitleLabel =  new Label();
+            dataVisualizationTitleLabel = new Label();
 
             logoutButton = new Button();
             homeButton = new Button();
@@ -43,7 +63,7 @@ namespace AuroPay.Views.About
             settingButton = new Button();
 
             this.SuspendLayout();
-            ScreenHelper.SetupScreen(this, "AuroPay - About");
+            ScreenHelper.SetupScreen(this, "AuroPay - Analysis");
 
             sidebarPanel.SuspendLayout();
             contentPanel.SuspendLayout();
@@ -79,12 +99,12 @@ namespace AuroPay.Views.About
             homeButton.TextImageRelation = TextImageRelation.ImageBeforeText;
             homeButton.Click += (sender, e) => HomeController.NavigateToHome(this);
             homeButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(homeButton);
-
+    
             statsButton.Size = new Size(sidebarPanel.Width - 40, 40);
             statsButton.Location = new Point(20, homeButton.Bottom + 10);
             statsButton.Text = "Analysis";
             statsButton.Font = new Font("Inter", 12F, FontStyle.Regular);
-            statsButton.BackColor = Color.FromArgb(255, 180, 180, 180);
+            statsButton.BackColor = Color.Black;
             statsButton.ForeColor = Color.White;
             statsButton.FlatStyle = FlatStyle.Flat;
             statsButton.FlatAppearance.BorderSize = 0;
@@ -116,7 +136,7 @@ namespace AuroPay.Views.About
             aboutButton.Location = new Point(20, transactionButton.Bottom + 10);
             aboutButton.Text = "About";
             aboutButton.Font = new Font("Inter", 12F, FontStyle.Regular);
-            aboutButton.BackColor = Color.Black;
+            aboutButton.BackColor = Color.FromArgb(255, 180, 180, 180);
             aboutButton.ForeColor = Color.White;
             aboutButton.FlatStyle = FlatStyle.Flat;
             aboutButton.FlatAppearance.BorderSize = 0;
@@ -181,11 +201,12 @@ namespace AuroPay.Views.About
 
             LayoutHelper.CreateRoundedCorners(homeButton, 16);
             LayoutHelper.CreateRoundedCorners(statsButton, 16);
-            LayoutHelper.CreateRoundedCorners(aboutButton, 16);
             LayoutHelper.CreateRoundedCorners(transactionButton, 16);
+            LayoutHelper.CreateRoundedCorners(aboutButton, 16);
             LayoutHelper.CreateRoundedCorners(profileButton, 16);
             LayoutHelper.CreateRoundedCorners(settingButton, 16);
             LayoutHelper.CreateRoundedCorners(logoutButton, 16);
+
 
             sidebarPanel.Controls.Add(logoPictureBox);
             sidebarPanel.Controls.Add(homeButton);
@@ -201,45 +222,44 @@ namespace AuroPay.Views.About
             contentPanel.BackColor = Color.White;
             contentPanel.Padding = new Padding(40);
 
-            aboutTitleLabel.AutoSize = true;
-            aboutTitleLabel.Font = new Font("Inter", 14F, FontStyle.Regular);
-            aboutTitleLabel.Text = "About AuroPay";
-            aboutTitleLabel.Location = new Point(40, 40);
+            transactionTitleLabel.AutoSize = true;
+            transactionTitleLabel.Font = new Font("Inter", 14F, FontStyle.Regular);
+            transactionTitleLabel.Text = "Transactions";
+            transactionTitleLabel.Location = new Point(40, 40);
 
-            firstParaLabel.AutoSize = true;
-            firstParaLabel.Font = new Font("Inter", 10F);
-            firstParaLabel.Location = new Point(40, 100);
-            firstParaLabel.ReadOnly = true; 
-            firstParaLabel.ForeColor = Color.Black;
-            firstParaLabel.BackColor = Color.White;
-            firstParaLabel.BorderStyle = BorderStyle.None;  
-            firstParaLabel.SelectionAlignment = HorizontalAlignment.Left;
-            firstParaLabel.Text = "AuroPay is an innovative personal finance management platform designed to help individuals take control of their financial journey. Whether you’re looking to track your expenses, set up budgets, or monitor your income, AuroPay provides all the tools you need in one place. With an easy-to-use interface and powerful features, AuroPay helps you make informed decisions and maintain financial stability. By categorizing your transactions, AuroPay gives you a clear overview of your spending habits, helping you optimize your finances effectively.";
+            balanceTitleLabel.AutoSize = true;
+            balanceTitleLabel.Font = new Font("Inter", 12F, FontStyle.Bold);
+            balanceTitleLabel.Text = "Balance";
+            balanceTitleLabel.Location = new Point(40, 100); 
+            
+            debtsTitleLabel.AutoSize = true;
+            debtsTitleLabel.Font = new Font("Inter", 12F, FontStyle.Bold);
+            debtsTitleLabel.Text = "Debts";
+            debtsTitleLabel.Location = new Point(40, 200);      
 
-            secondParaLabel.AutoSize = true;  
-            secondParaLabel.ReadOnly = true; 
-            secondParaLabel.ForeColor = Color.Black;
-            secondParaLabel.BackColor = Color.White;
-            secondParaLabel.BorderStyle = BorderStyle.None;  
-            secondParaLabel.SelectionAlignment = HorizontalAlignment.Left;
-            secondParaLabel.Font = new Font("Inter", 10F);
-            secondParaLabel.Location = new Point(40, firstParaLabel.Bottom + 30);
-            secondParaLabel.Text = "Tracking your daily expenses can be overwhelming, but AuroPay makes it simple. The platform automatically categorizes your spending and helps you create customized budgets based on your income. AuroPay’s intuitive dashboard provides a clear breakdown of your financial activity, making it easier to visualize your progress. With real-time updates, you’ll always know exactly where your money is going, enabling you to set realistic financial goals and stick to them.";           
+            staticsTitleLabel.AutoSize = true;
+            staticsTitleLabel.Font = new Font("Inter", 12F, FontStyle.Bold);
+            staticsTitleLabel.Text = "Transaction Count";
+            staticsTitleLabel.Location = new Point(40, 300);
 
-            thirdParaLabel.AutoSize = true;
-            thirdParaLabel.Font = new Font("Inter", 10F);
-            thirdParaLabel.Location = new Point(40, secondParaLabel.Bottom + 30); 
-            thirdParaLabel.ReadOnly = true; 
-            thirdParaLabel.ForeColor = Color.Black;
-            thirdParaLabel.BackColor = Color.White;
-            thirdParaLabel.BorderStyle = BorderStyle.None;  
-            thirdParaLabel.SelectionAlignment = HorizontalAlignment.Left;           
-            thirdParaLabel.Text = "AuroPay prioritizes the security of your financial data. Using state-of-the-art encryption technology, your sensitive information is safe and protected at all times. Whether you're at home or on the go, AuroPay ensures that you have access to your finances whenever you need it. With cloud synchronization, your financial information is always up to date across all devices, so you can monitor your budget, track your expenses, and make smart financial decisions no matter where life takes you.";                                
+            debtStatusTitleLabel.AutoSize = true;
+            debtStatusTitleLabel.Font = new Font("Inter", 12F, FontStyle.Bold);
+            debtStatusTitleLabel.Text = "Debts Balance";
+            debtStatusTitleLabel.Location = new Point(40, 400); 
 
-            contentPanel.Controls.Add(aboutTitleLabel);
-            contentPanel.Controls.Add(firstParaLabel);
-            contentPanel.Controls.Add(secondParaLabel);
-            contentPanel.Controls.Add(thirdParaLabel);
+            dataVisualizationTitleLabel.AutoSize = true;
+            dataVisualizationTitleLabel.Font = new Font("Inter", 12F, FontStyle.Bold);
+            dataVisualizationTitleLabel.Text = "Visualization";
+            dataVisualizationTitleLabel.Location = new Point(40, 500);
+            dataVisualizationTitleLabel.Visible = false;
+
+
+            contentPanel.Controls.Add(transactionTitleLabel);
+            contentPanel.Controls.Add(balanceTitleLabel);
+            contentPanel.Controls.Add(staticsTitleLabel);
+            contentPanel.Controls.Add(debtsTitleLabel);
+            contentPanel.Controls.Add(debtStatusTitleLabel);            
+            contentPanel.Controls.Add(dataVisualizationTitleLabel);            
 
             this.Controls.Add(sidebarPanel);
             this.Controls.Add(contentPanel);
@@ -250,6 +270,6 @@ namespace AuroPay.Views.About
             contentPanel.ResumeLayout();
 
             this.ResumeLayout();
-        }
+        }        
     }
 }

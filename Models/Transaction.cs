@@ -4,7 +4,6 @@ namespace AuroPay.Models
     {
         public int Id { get; set; }        
         public int UserId { get; set; }
-        public User? User { get; set; }  
         public string? Tnx { get; set; } 
         public string? Type { get; set; }        
         public string? Scope { get; set; }

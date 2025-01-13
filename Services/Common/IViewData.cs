@@ -5,3 +5,4 @@ namespace AuroPay.Common
         void SetData(object data);
     }
 }
+

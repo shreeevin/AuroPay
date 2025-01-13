@@ -1,5 +1,5 @@
 using AuroPay.Models;
-using AuroPay.Common; 
+using AuroPay.Common;
 
 namespace AuroPay.Views.Home
 {
@@ -22,8 +22,14 @@ namespace AuroPay.Views.Home
                 walletAndCurrencyLabel.Text = $"{currentUser.Currency} {currentUser.Wallet}";
                 joinedOnLabel.Text = $"Joined on {currentUser.CreatedAt.ToString("MMM dd, yyyy")}";
             }
+
+            PopulateTransaction();
         }
 
+        private void SystemQuiteApp()
+        {
+            Application.Exit();
+        }
         private void AdjustLayout(object sender, EventArgs e)
         {
             sidebarPanel.Width = (int)(this.ClientSize.Width * 0.25);
@@ -44,6 +50,7 @@ namespace AuroPay.Views.Home
 
             homeButton.Size = new Size(sidebarPanel.Width - 40, 40);
             aboutButton.Size = new Size(sidebarPanel.Width - 40, 40);
+            statsButton.Size = new Size(sidebarPanel.Width - 40, 40);
             transactionButton.Size = new Size(sidebarPanel.Width - 40, 40);
             profileButton.Size = new Size(sidebarPanel.Width - 40, 40);
             settingButton.Size = new Size(sidebarPanel.Width - 40, 40);
@@ -52,10 +59,17 @@ namespace AuroPay.Views.Home
             settlementIncomeButton.Size = new Size((int)(contentPanel.Width * 0.2), 40);
             settlementExpenseButton.Size = new Size((int)(contentPanel.Width * 0.2), 40);
             settlementDebtButton.Size = new Size((int)(contentPanel.Width * 0.2), 40);
+            appQuitButton.Size = new Size((int)(contentPanel.Width * 0.2), 40);
 
-            settlementIncomeButton.Location = new Point(20, joinedOnLabel.Bottom + 50);
+            settlementIncomeButton.Location = new Point(40, joinedOnLabel.Bottom + 50);
             settlementExpenseButton.Location = new Point(settlementIncomeButton.Right + 20, joinedOnLabel.Bottom + 50);
             settlementDebtButton.Location = new Point(settlementExpenseButton.Right + 20, joinedOnLabel.Bottom + 50);
+            appQuitButton.Location = new Point(settlementDebtButton.Right + 20, joinedOnLabel.Bottom + 50);
+
+            pendingDebtLabel.Location = new Point(40, settlementIncomeButton.Bottom + 50);
+
+            dataGridViewTransactions.Location = new Point(40, pendingDebtLabel.Bottom + 20); 
+            dataGridViewTransactions.Size = new Size(contentPanel.Width - 80, contentPanel.Height - pendingDebtLabel.Bottom - 60);
         }
     }
 }

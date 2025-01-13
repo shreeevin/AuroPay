@@ -1,8 +1,8 @@
-using AuroPay.Helpers;
-using AuroPay.Controllers;
-
 using AuroPay.Models;
+using AuroPay.Helpers;
 using AuroPay.Components;
+using AuroPay.Controllers;
+using AuroPay.Components.Assistants;
 
 namespace AuroPay.Views.Register
 {
@@ -46,15 +46,10 @@ namespace AuroPay.Views.Register
             var systemCurrencies = CurrencyHelper.GetCurrencies();
 
             this.SuspendLayout();
+            ScreenHelper.SetupScreen(this, "AuroPay - Register");
+
             registerPanel.SuspendLayout();
 
-            this.MinimumSize = new Size(800, 450);
-            this.ClientSize = new Size(800, 450);
-            this.WindowState = FormWindowState.Maximized;
-            this.Name = "AuroPay - Register";
-            this.Text = "AuroPay - Register";
-            this.BackColor = Color.White;
-            this.Icon = new Icon("Resources/AppIcon/icon.ico");
 
             registerPanel.Dock = DockStyle.Right;
             registerPanel.Width = (int)(this.ClientSize.Width * 0.4);

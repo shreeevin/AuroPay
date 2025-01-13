@@ -4,28 +4,31 @@ using AuroPay.Helpers;
 
 namespace AuroPay.Views.Settlement
 {
-    public partial class SettlementScreen : Form, IViewData
+    public partial class SettlementEditScreen : Form, IViewData
     {
-        public SettlementScreen()
+        public SettlementEditScreen()
         {
-            InitializeComponent();        }
+            InitializeComponent();
+        }
         public void SetData(object data)
         {
             if (data is Dictionary<string, object> dataDict)
             {
-                if (dataDict.TryGetValue("settlementScope", out var scopeValue))
-                {
-                    settlementScope = scopeValue?.ToString() ?? "income";
-                    settlementTitleLabel.Text = $"Create {char.ToUpper(settlementScope[0])}{settlementScope.Substring(1)} Settlement";
-                    createSettlementButton.Text = $"Create {char.ToUpper(settlementScope[0])}{settlementScope.Substring(1)}";
-
-                    UpdateSystemSources();
-                }
-
                 if (dataDict.TryGetValue("currentUser", out var userValue) && userValue is User extractedUser)
                 {
                     this.currentUser = extractedUser;
                 }
+
+                if (dataDict.TryGetValue("currentTransaction", out var transactionValue) && transactionValue is Models.Transaction extractedTransaction)
+                {
+                    currentTransaction = extractedTransaction;
+                }
+
+                settlementScope = currentTransaction.Scope;
+                
+                UpdateSystemSources();
+                UpdateSystemTransactionDependancy();
+                InitializeTags();
             }
             
             if (data is User currentUser)
@@ -86,15 +89,15 @@ namespace AuroPay.Views.Settlement
         private void UpdateTagsVisibility()
         {
             allTags.Visible = Tags.Count > 0;  
-            UpdateSettlementButtonLocation();         
+            UpdateSettlementButtonLocation();     
         }
         private void UpdateSettlementButtonLocation()
         {
-            createSettlementButton.Location = allTags.Visible 
+            updateSettlementButton.Location = allTags.Visible 
                 ? new Point(40, allTags.Bottom + 50) 
                 : new Point(40, clearTagButton.Bottom + 50); 
 
-            contentPanel.AutoScrollMinSize = new Size(0, createSettlementButton.Bottom + 50);
+            contentPanel.AutoScrollMinSize = new Size(0, updateSettlementButton.Bottom + 50);
         }
 
         private void ValidateAmountInput(object sender, KeyPressEventArgs e)
@@ -104,12 +107,48 @@ namespace AuroPay.Views.Settlement
                 e.Handled = true;
             }
         }
+        private void InitializeTags()
+        {
+            Tags.Clear();
+            allTags.Items.Clear();
 
+            foreach (var tag in currentTransaction.Tags)
+            {
+                if (!string.IsNullOrWhiteSpace(tag))
+                {
+                    Tags.Add(tag);
+                    allTags.Items.Add(tag);
+                }
+            }
+
+            UpdateTagsVisibility(); 
+
+            if(currentTransaction.Tags.Count > 0)
+            {
+                updateSettlementButton.Location = new Point(40, allTags.Bottom + 50);
+                contentPanel.AutoScrollMinSize = new Size(0, updateSettlementButton.Bottom + 50);
+            }
+        }
         private void UpdateSystemSources()
         {
             var systemSources = SourceHelper.GetSources(settlementScope);
-            sourceComboBox.DataSource = systemSources;   
+
+            sourceComboBox.DataSource = systemSources;
+            sourceComboBox.DisplayMember = "Name"; 
+            sourceComboBox.ValueMember = "Code";   
+
+            var selectedSource = systemSources.FirstOrDefault(source => source.Code == currentTransaction.Source || source.Name == currentTransaction.Source);
+
+            if (selectedSource != null)
+            {
+                sourceComboBox.SelectedItem = selectedSource;
+            }
+            else
+            {
+                sourceComboBox.SelectedItem = null;  
+            }
         }
+
         private void AdjustLayout(object sender, EventArgs e)
         {
             sidebarPanel.Width = (int)(this.ClientSize.Width * 0.25);
@@ -118,8 +157,7 @@ namespace AuroPay.Views.Settlement
             logoPictureBox.Location = new Point(
                 (sidebarPanel.Width - logoPictureBox.Width) / 2,
                 40
-            );
-            
+            );            
 
             amountLabel.Width = contentPanel.Width - 80;
             sourceLabel.Width = contentPanel.Width - 80;
@@ -149,7 +187,7 @@ namespace AuroPay.Views.Settlement
             removeTagButton.Location = new Point(saveTagButton.Right + 20, tagTextBox.Bottom + 20);
             clearTagButton.Location = new Point(removeTagButton.Right + 20, tagTextBox.Bottom + 20);
 
-            createSettlementButton.Size = new Size((int)(contentPanel.Width * 0.2), 40);
+            updateSettlementButton.Size = new Size((int)(contentPanel.Width * 0.2), 40);
         }
     }
 }

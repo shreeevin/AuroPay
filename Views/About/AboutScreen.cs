@@ -25,6 +25,7 @@
             aboutTitleLabel.Width = contentPanel.Width - 80;
 
             homeButton.Size = new Size(sidebarPanel.Width - 40, 40);
+            statsButton.Size = new Size(sidebarPanel.Width - 40, 40);
             aboutButton.Size = new Size(sidebarPanel.Width - 40, 40);
             transactionButton.Size = new Size(sidebarPanel.Width - 40, 40);
             profileButton.Size = new Size(sidebarPanel.Width - 40, 40);

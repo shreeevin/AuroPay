@@ -6,14 +6,14 @@
         {
             InitializeComponent();
         }
-        private void AdjustLayout(PictureBox logoPictureBox, Label appNameLabel, Label copyrightLabel)
+        private void AdjustLayout()
         {
-            logoPictureBox.Width = (int)(this.ClientSize.Width * 0.3); 
-            logoPictureBox.Height = (int)(logoPictureBox.Width * 0.2); 
+            logoPictureBox.Width = (int)(this.ClientSize.Width * 0.075); 
+            logoPictureBox.Height = (int)(this.ClientSize.Width * 0.075); 
 
             logoPictureBox.Location = new Point(
                 (this.ClientSize.Width - logoPictureBox.Width) / 2,
-                (this.ClientSize.Height - logoPictureBox.Height) / 2 - 20
+                (this.ClientSize.Height - (int)(this.ClientSize.Height * 0.15) - logoPictureBox.Height) / 2 - 20
             );
 
             appNameLabel.Location = new Point(
@@ -23,7 +23,7 @@
 
             copyrightLabel.Location = new Point(
                 (this.ClientSize.Width - copyrightLabel.Width) / 2,
-                this.ClientSize.Height - copyrightLabel.Height - 40
+                this.ClientSize.Height - (int)(this.ClientSize.Height * 0.05) - copyrightLabel.Height
             );
         }
     }

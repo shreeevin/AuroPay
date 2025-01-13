@@ -1,6 +1,7 @@
 using AuroPay.Helpers;
 using AuroPay.Components;
 using AuroPay.Controllers;
+using AuroPay.Components.Assistants;
 
 namespace AuroPay.Views.Login
 {
@@ -38,15 +39,9 @@ namespace AuroPay.Views.Login
             signUpLinkLabel = new LinkLabel();
 
             this.SuspendLayout();
-            loginPanel.SuspendLayout();
+            ScreenHelper.SetupScreen(this, "AuroPay - Login");
 
-            this.MinimumSize = new Size(800, 450);
-            this.ClientSize = new Size(800, 450);
-            this.WindowState = FormWindowState.Maximized;
-            this.Name = "AuroPay - Login";
-            this.Text = "AuroPay - Login";
-            this.BackColor = Color.White;
-            this.Icon = new Icon("Resources/AppIcon/icon.ico");
+            loginPanel.SuspendLayout();
 
             loginPanel.Dock = DockStyle.Right;
             loginPanel.Width = (int)(this.ClientSize.Width * 0.4);
@@ -79,7 +74,6 @@ namespace AuroPay.Views.Login
             usernameTextBox.Font = new Font("Inter", 12F);
             usernameTextBox.BackColor = Color.White;
             usernameTextBox.Height = 55;
-            usernameTextBox.Text = "nben";
             usernameTextBox.CornerRadius = 15;
             usernameTextBox.Padding = new Padding(10, 15, 10, 15);
 
@@ -91,7 +85,6 @@ namespace AuroPay.Views.Login
             passwordTextBox.Size = new Size(loginPanel.Width - 80, 55);
             passwordTextBox.Location = new Point(40, 360);
             passwordTextBox.Font = new Font("Inter", 12F);
-            passwordTextBox.Text = "123456789";
             passwordTextBox.UseSystemPasswordChar = true; 
             passwordTextBox.BackColor = Color.White;
             passwordTextBox.Height = 55;

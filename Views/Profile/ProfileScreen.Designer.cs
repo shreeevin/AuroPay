@@ -2,6 +2,7 @@ using AuroPay.Models;
 using AuroPay.Helpers;
 using AuroPay.Components;
 using AuroPay.Controllers;
+using AuroPay.Components.Assistants;
 
 namespace AuroPay.Views.Profile
 {
@@ -42,15 +43,9 @@ namespace AuroPay.Views.Profile
             goBackTextLabel = new Label();
 
             this.SuspendLayout();
-            profilePanel.SuspendLayout();
+            ScreenHelper.SetupScreen(this, "AuroPay - Profile");
 
-            this.MinimumSize = new Size(800, 450);
-            this.ClientSize = new Size(800, 450);
-            this.WindowState = FormWindowState.Maximized;
-            this.Name = "AuroPay - Profile";
-            this.Text = "AuroPay - Profile";
-            this.BackColor = Color.White;
-            this.Icon = new Icon("Resources/AppIcon/icon.ico");
+            profilePanel.SuspendLayout();
 
             profilePanel.Dock = DockStyle.Right;
             profilePanel.Width = (int)(this.ClientSize.Width * 0.4);

@@ -7,7 +7,7 @@ using AuroPay.Components.Assistants;
 
 namespace AuroPay.Views.Settlement
 {
-    partial class SettlementScreen
+    partial class SettlementEditScreen
     {
         private Panel sidebarPanel;
         private Panel contentPanel;
@@ -31,8 +31,9 @@ namespace AuroPay.Views.Settlement
         private Button saveTagButton;
         private Button removeTagButton;
         private Button clearTagButton;
-        private Button createSettlementButton;
+        private Button updateSettlementButton;
         private User currentUser;
+        private Models.Transaction currentTransaction;
         private string settlementScope;    
         private ListBox allTags;
         private List<string> Tags = new List<string>();
@@ -63,7 +64,7 @@ namespace AuroPay.Views.Settlement
             profileButton = new Button();
             settingButton = new Button();
 
-            createSettlementButton = new Button();
+            updateSettlementButton = new Button();
 
             allTags = new ListBox();
             saveTagButton = new Button();
@@ -73,7 +74,7 @@ namespace AuroPay.Views.Settlement
             var systemSources = SourceHelper.GetSources("default");
 
             this.SuspendLayout();
-            ScreenHelper.SetupScreen(this, "AuroPay - Settlement");
+            ScreenHelper.SetupScreen(this, "AuroPay - Settlement Edit");
 
             sidebarPanel.SuspendLayout();
             contentPanel.SuspendLayout();
@@ -337,22 +338,22 @@ namespace AuroPay.Views.Settlement
             allTags.BorderStyle = BorderStyle.Fixed3D;
             allTags.Visible = false;
 
-            createSettlementButton.Size = new Size((int)(contentPanel.Width * 0.20), 40);
-            createSettlementButton.Location = new Point(40, clearTagButton.Bottom + 50);
-            createSettlementButton.Text = "Create Settlement";
-            createSettlementButton.Font = new Font("Inter", 12F, FontStyle.Regular);
-            createSettlementButton.BackColor = Color.Black;
-            createSettlementButton.ForeColor = Color.White;
-            createSettlementButton.FlatStyle = FlatStyle.Flat;
-            createSettlementButton.FlatAppearance.BorderSize = 0;
-            createSettlementButton.Cursor = Cursors.Hand;  
-            createSettlementButton.Click += (sender, e) => CreateSettlementButtonClick();
-            createSettlementButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(createSettlementButton);
+            updateSettlementButton.Size = new Size((int)(contentPanel.Width * 0.20), 40);
+            updateSettlementButton.Location = new Point(40, clearTagButton.Bottom + 50);
+            updateSettlementButton.Text = "Create Settlement";
+            updateSettlementButton.Font = new Font("Inter", 12F, FontStyle.Regular);
+            updateSettlementButton.BackColor = Color.Black;
+            updateSettlementButton.ForeColor = Color.White;
+            updateSettlementButton.FlatStyle = FlatStyle.Flat;
+            updateSettlementButton.FlatAppearance.BorderSize = 0;
+            updateSettlementButton.Cursor = Cursors.Hand;  
+            updateSettlementButton.Click += (sender, e) => UpdateSettlementButtonClick();
+            updateSettlementButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(updateSettlementButton);
 
             LayoutHelper.CreateRoundedCorners(saveTagButton, 16);
             LayoutHelper.CreateRoundedCorners(removeTagButton, 16);
             LayoutHelper.CreateRoundedCorners(clearTagButton, 16);
-            LayoutHelper.CreateRoundedCorners(createSettlementButton, 16);
+            LayoutHelper.CreateRoundedCorners(updateSettlementButton, 16);
 
             contentPanel.Controls.Add(settlementTitleLabel);
             contentPanel.Controls.Add(amountLabel);
@@ -369,7 +370,7 @@ namespace AuroPay.Views.Settlement
 
             contentPanel.Controls.Add(noteLabel);
             contentPanel.Controls.Add(noteTextBox);            
-            contentPanel.Controls.Add(createSettlementButton);
+            contentPanel.Controls.Add(updateSettlementButton);
             
             this.Controls.Add(sidebarPanel);
             this.Controls.Add(contentPanel);
@@ -395,7 +396,124 @@ namespace AuroPay.Views.Settlement
                 MessageBox.Show("Please select a tag to remove.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-        private void CreateSettlementButtonClick()
+
+        private (bool, decimal, string) TransactionUpdateGate()
+        {
+            decimal amount = 0;
+            decimal.TryParse(amountTextBox.Text, out amount);
+
+            decimal incomeBalance = TransactionService.GetTransactionBalance(currentUser.Id, "income");
+            decimal expenseBalance = TransactionService.GetTransactionBalance(currentUser.Id, "expense");
+            decimal totalDebtClearedBalance = TransactionService.GetTransactionBalance(currentUser.Id, "debt_completed");
+
+            decimal balanceDifference = 0;
+            decimal availableBalance = incomeBalance - (expenseBalance + totalDebtClearedBalance);
+
+            if (availableBalance < 0) 
+            {
+                availableBalance = 0;
+
+                return (false, 0, "none");
+            }
+            else if (currentTransaction.Scope == "income")
+            {
+                if (amount > currentTransaction.Amount)
+                {
+                    balanceDifference = amount - currentTransaction.Amount;
+                    if (availableBalance + balanceDifference < 0)
+                    {
+                        MessageBox.Show(
+                            "The new income amount exceeds the available balance. Please enter a valid amount.",
+                            "Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error
+                        );
+                        return (false, 0, "add");
+                    }
+                    return (true, balanceDifference, "add");
+                }
+                else if (amount < currentTransaction.Amount)
+                {
+                    balanceDifference = currentTransaction.Amount - amount;
+
+                    if (balanceDifference > availableBalance)
+                    {
+                        MessageBox.Show(
+                            "The new income amount is too low and would cause the balance to be insufficient for expenses and cleared debts. Please enter a valid amount.",
+                            "Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error
+                        );
+                        return (false, 0, "reduce");
+                    }
+
+                    return (true, balanceDifference, "reduce");
+                }
+                else
+                {
+                    return (false, 0, "none");
+                }
+            }
+            else if (currentTransaction.Scope == "expense")
+            {
+                if (amount > currentTransaction.Amount) 
+                {
+                    balanceDifference = amount - currentTransaction.Amount;
+                    if (availableBalance < balanceDifference) 
+                    {
+                        MessageBox.Show(
+                            "The new expense amount exceeds the available balance. Please enter a valid amount.",
+                            "Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error
+                        );
+                        return (false, 0, "add");
+                    }
+                    return (true, balanceDifference, "reduce");
+                }
+                else if (amount < currentTransaction.Amount) 
+                {
+                    balanceDifference = currentTransaction.Amount - amount;
+                    return (true, balanceDifference, "add");
+                }
+                else
+                {
+                    return (false, 0, "none");
+                }
+            }
+            else if (currentTransaction.Scope == "debt" && currentTransaction.Status == "completed")
+            {
+                if (amount > currentTransaction.Amount) 
+                {
+                    balanceDifference = amount - currentTransaction.Amount;
+                    if (availableBalance < balanceDifference) 
+                    {
+                        MessageBox.Show(
+                            "The new debt amount exceeds the available balance. Please enter a valid amount.",
+                            "Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error
+                        );
+                        return (false, 0, "add");
+                    }
+                    return (true, balanceDifference, "reduce");
+                }
+                else if (amount < currentTransaction.Amount) 
+                {
+                    balanceDifference = currentTransaction.Amount - amount;
+                    return (true, balanceDifference, "add");
+                }
+                else
+                {
+                    return (false, 0, "none");
+                }
+            }
+
+            return (false, 0, "none");
+        }
+
+
+        private void UpdateSettlementButtonClick()
         {
             var selectedSource = (Source)sourceComboBox.SelectedItem;
             string source = selectedSource.Code;
@@ -408,37 +526,83 @@ namespace AuroPay.Views.Settlement
             }
 
             int UserId = currentUser.Id;
-            string Scope = settlementScope;
+            int TransactionId = currentTransaction.Id;
+
+            string Scope = currentTransaction.Scope;
             string Source = source;
 
             string Tnx = Guid.NewGuid().ToString();
-            string Type = (settlementScope == "income") ? "debit" : "credit";
+            string Type = currentTransaction.Type;
             
             decimal Fee = 0;
             decimal Amount = 0;
             decimal.TryParse(amountTextBox.Text, out Amount);
 
             string Note = noteTextBox.Text;            
-            string Status = (settlementScope == "debt") ? "pending" : "completed";
+            string Status = currentTransaction.Status;
 
-            bool isTransactionCreated = TransactionService.CreateTransaction(
-                UserId,
-                Tnx,
-                Type,
-                Scope,
-                Source,
-                Tags,
-                Note,
-                Fee,
-                Amount,
-                Status
-            );
+            bool isGateRequired = true;
+            bool isTransactionUpdated = false;
 
-            if(isTransactionCreated)
+            if(Amount == currentTransaction.Amount)
+            {
+                isGateRequired = false;
+            }
+
+            if(currentTransaction.Scope == "debt" && currentTransaction.Status == "pending")
+            {
+                isGateRequired = false;
+            }
+
+            if(isGateRequired)            
+            {
+                (bool isGatesuccess, decimal gateBalanceDifference, string gateAction) = TransactionUpdateGate();
+                if (isGatesuccess)
+                {
+                    if (gateAction == "add" || gateAction == "reduce")
+                    {
+                        AuthService.UpdateWalletBalance(
+                            UserId,
+                            gateBalanceDifference,
+                            gateAction
+                        );
+
+                        isTransactionUpdated = TransactionService.UpdateTransactionById(
+                            transactionId: TransactionId,
+                            userId: UserId,
+                            type: Type,
+                            scope: Scope,
+                            source: Source,
+                            tags: Tags,
+                            note: Note,
+                            fee: Fee,
+                            amount: Amount,
+                            status: Status
+                        );
+                    }
+                }
+            }
+            else
+            {
+                isTransactionUpdated = TransactionService.UpdateTransactionById(
+                    transactionId: TransactionId,
+                    userId: UserId,
+                    type: Type,
+                    scope: Scope,
+                    source: Source,
+                    tags: Tags,
+                    note: Note,
+                    fee: Fee,
+                    amount: Amount,
+                    status: Status
+                );
+            }
+
+            if(isTransactionUpdated)
             {
                 MessageBox.Show(
-                    "Transaction created successfully! Your payment has been processed.",
-                    "Transaction Successful",
+                    "Transaction updated successfully! Your payment has been processed.",
+                    "Transaction Updated",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -448,7 +612,18 @@ namespace AuroPay.Views.Settlement
 
                 ClearTags();
                 UpdateTagsVisibility();
-            }
+
+                TransactionController.NavigateToTransaction(this);
+            }            
+        }
+
+        private void UpdateSystemTransactionDependancy()
+        {
+            settlementTitleLabel.Text = $"Edit {char.ToUpper(settlementScope[0])}{settlementScope.Substring(1)} Settlement";
+            updateSettlementButton.Text = $"Update {char.ToUpper(settlementScope[0])}{settlementScope.Substring(1)}";
+
+            amountTextBox.Text = $"{currentTransaction.Amount}";
+            noteTextBox.Text = currentTransaction.Note;
         }
     }
 }

@@ -24,15 +24,32 @@ namespace AuroPay.Services
                 }
                 else
                 {
-                    throw new Exception("Route not found.");
+                    ShowErrorScreen();
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+                ShowErrorScreen();
+            }
+        }
+        private static void ShowErrorScreen()
+        {
+            CloseAllFormsExceptCurrent();
 
-                var errorScreen = new ErrorScreen();
-                errorScreen.Show();
+            var errorScreen = new ErrorScreen();
+            errorScreen.Show();
+        }
+        private static void CloseAllFormsExceptCurrent()
+        {
+            var openForms = Application.OpenForms.Cast<Form>().ToList();
+
+            foreach (var form in openForms)
+            {
+                if (!form.IsDisposed)
+                {
+                    form.Close();
+                }
             }
         }
     }

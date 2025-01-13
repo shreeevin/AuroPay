@@ -1,5 +1,6 @@
 using AuroPay.Helpers;
 using AuroPay.Components;
+using AuroPay.Components.Assistants;
 
 namespace AuroPay.Views.Onboard
 {
@@ -41,15 +42,9 @@ namespace AuroPay.Views.Onboard
             signUpLinkLabel = new LinkLabel();
 
             this.SuspendLayout();
-            registerPanel.SuspendLayout();
+            ScreenHelper.SetupScreen(this, "AuroPay - Onboard");
 
-            this.MinimumSize = new Size(800, 450);
-            this.ClientSize = new Size(800, 450);
-            this.WindowState = FormWindowState.Maximized;
-            this.Name = "AuroPay - Onboard";
-            this.Text = "AuroPay - Onboard";
-            this.BackColor = Color.White;
-            this.Icon = new Icon("Resources/AppIcon/icon.ico");
+            registerPanel.SuspendLayout();
 
             registerPanel.Dock = DockStyle.Right;
             registerPanel.Width = (int)(this.ClientSize.Width * 0.4);

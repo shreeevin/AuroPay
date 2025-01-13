@@ -24,8 +24,8 @@ namespace AuroPay.Controllers
                 RouterService.NavigateTo(splashScreen, loginScreenForm.GetType());
             };
             
-            timer.Start(); 
-            
+            timer.Start();         
+                
             Application.Run(splashScreen); 
         }
 

@@ -302,6 +302,117 @@ namespace AuroPay.Services
                 return false;
             }
         }
+        public static decimal GetWalletBalance(int userId)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection($"Data Source={DatabaseFilePath}"))
+                {
+                    connection.Open();
+
+                    var command = connection.CreateCommand();
+                    command.CommandText = @"
+                        SELECT wallet
+                        FROM users
+                        WHERE id = $userId;
+                    ";
+                    command.Parameters.AddWithValue("$userId", userId);
+
+                    decimal? wallet = null;
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            wallet = reader.GetDecimal(0);
+                        }
+                    }
+
+                    if (wallet == null)
+                    {
+                        MessageBox.Show("User not found. Please check the user ID.", "Wallet Check Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return 0; 
+                    }
+
+                    return wallet.Value; 
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error checking wallet balance: {ex.Message}");
+                return 0; 
+            }
+        }
+        public static bool UpdateWalletBalance(int userId, decimal amount, string action)
+        {
+            try
+            {
+                if (action != "add" && action != "reduce")
+                {
+                    MessageBox.Show("Invalid action. Use 'add' or 'reduce'.", "Invalid Action", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+
+                if (action == "reduce")
+                {
+                    amount = -Math.Abs(amount); 
+                }
+
+                using (var connection = new SqliteConnection($"Data Source={DatabaseFilePath}"))
+                {
+                    connection.Open();
+
+                    var command = connection.CreateCommand();
+                    command.CommandText = @"
+                        SELECT wallet
+                        FROM users
+                        WHERE id = $userId;
+                    ";
+                    command.Parameters.AddWithValue("$userId", userId);
+
+                    decimal? currentWallet = null;
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            currentWallet = reader.GetDecimal(0);
+                        }
+                    }
+
+                    if (currentWallet == null)
+                    {
+                        MessageBox.Show("User not found. Please check the user ID.", "Wallet Update Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
+                    }
+
+                    decimal newWalletBalance = currentWallet.Value + amount;
+
+                    command = connection.CreateCommand();
+                    command.CommandText = @"
+                        UPDATE users
+                        SET wallet = $newWalletBalance
+                        WHERE id = $userId;
+                    ";
+                    command.Parameters.AddWithValue("$userId", userId);
+                    command.Parameters.AddWithValue("$newWalletBalance", newWalletBalance);
+
+                    var result = command.ExecuteNonQuery();
+                    if (result > 0)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("There was a problem updating your wallet balance. Please try again.", "Update Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating wallet balance: {ex.Message}");
+                return false;
+            }
+        }
 
         public static bool IsConfigured()
         {

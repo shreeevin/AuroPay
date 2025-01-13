@@ -2,37 +2,49 @@ using AuroPay.Models;
 using AuroPay.Helpers;
 using AuroPay.Services;
 using AuroPay.Controllers;
+using AuroPay.Components;
 using AuroPay.Components.Assistants;
 
-namespace AuroPay.Views.Home
+namespace AuroPay.Views.Transaction
 {
-    partial class HomeScreen
+    partial class TransactionScreen
     {
         private Panel sidebarPanel;
         private Panel contentPanel;
         private PictureBox logoPictureBox;
-        private Label nameLabel;
-        private Label emailLabel;
-        private Label phoneLabel;
-        private Label walletAndCurrencyLabel;
-        private Label joinedOnLabel;
-        private Label greetingMessageLabel;
+        private Label transactionTitleLabel;
+        private Label allTransactionTitleLabel;
+        private Label noTransactionsLabel;
+        private PictureBox noTransactionsPictureBox;
         private Button logoutButton;
         private Button homeButton;
-        private Button aboutButton;
         private Button statsButton;
+        private Button aboutButton;
         private Button transactionButton;
         private Button profileButton;
         private Button settingButton;
-        private Button settlementExpenseButton;
-        private Button settlementIncomeButton;
-        private Button settlementDebtButton;
-        private Button appQuitButton;
-        private User currentUser;
-        private List<AuroPay.Models.Transaction> allTransactionData;
+        private Button allTransacrtionButton;
+        private Button incomeTransacrtionButton;
+        private Button expenseTransacrtionButton;
+        private Button debtTransacrtionButton;
         private DataGridView dataGridViewTransactions;
         private DataGridViewTextBoxColumn actionColumn;
-        private Label pendingDebtLabel;
+        private User currentUser;
+        private List<AuroPay.Models.Transaction> allTransactionData;
+        private Label filterSearchLabel;
+        private RoundedTextBox filterSearchTextBox;
+        private Label filterTypeLabel;
+        private Label filterScopeLabel;
+        private Label filterStatusLabel;
+        private ComboBox filterTypeComboBox;
+        private ComboBox filterScopeComboBox;
+        private ComboBox filterStatusComboBox;
+        private Label filterStartDateTimeLabel;
+        private Label filterEndDateTimeLabel;
+        private DateTimePicker filterStartDateTimePicker;
+        private DateTimePicker filterEndDateTimePicker;
+        private Button filterButton;
+        private Button filterClearButton;
         private void InitializeComponent()
         {
             sidebarPanel = new Panel();
@@ -40,15 +52,13 @@ namespace AuroPay.Views.Home
 
             logoPictureBox = new PictureBox();
 
-            nameLabel = new Label();
-            emailLabel = new Label();
-            phoneLabel = new Label();
-            walletAndCurrencyLabel = new Label();
-            joinedOnLabel = new Label();
+            transactionTitleLabel = new Label();
 
-            greetingMessageLabel = new Label();
+            allTransactionTitleLabel =  new Label();
 
-            pendingDebtLabel =  new Label();
+            noTransactionsLabel =  new Label();
+            noTransactionsPictureBox = new PictureBox();
+
             dataGridViewTransactions = new DataGridView();
             actionColumn = new DataGridViewTextBoxColumn();
 
@@ -60,13 +70,37 @@ namespace AuroPay.Views.Home
             profileButton = new Button();
             settingButton = new Button();
 
-            settlementExpenseButton = new Button();
-            settlementIncomeButton = new Button();
-            settlementDebtButton = new Button();
-            appQuitButton = new Button();
+            allTransacrtionButton = new Button();
+            incomeTransacrtionButton = new Button();
+            expenseTransacrtionButton = new Button();
+            debtTransacrtionButton = new Button();
+
+            filterButton = new Button();
+            filterClearButton = new Button();
+            
+            filterSearchLabel = new Label();
+            filterSearchTextBox =  new RoundedTextBox();
+
+            filterScopeLabel = new Label();
+            filterTypeLabel = new Label();
+            filterStatusLabel = new Label();
+
+            filterScopeComboBox = new ComboBox();
+            filterTypeComboBox = new ComboBox();
+            filterStatusComboBox = new ComboBox();
+
+            filterStartDateTimeLabel = new Label();
+            filterEndDateTimeLabel = new Label();
+
+            filterStartDateTimePicker = new DateTimePicker();
+            filterEndDateTimePicker = new DateTimePicker();            
+
+            var systemScopes = TransactionHelper.GetTransactionScopes();
+            var systemTypes = TransactionHelper.GetTransactionTypes();
+            var systemStatus = TransactionHelper.GetTransactionStatus();
 
             this.SuspendLayout();
-            ScreenHelper.SetupScreen(this, "AuroPay - Dashboard");
+            ScreenHelper.SetupScreen(this, "AuroPay - Transaction");
 
             sidebarPanel.SuspendLayout();
             contentPanel.SuspendLayout();
@@ -91,7 +125,7 @@ namespace AuroPay.Views.Home
             homeButton.Location = new Point(20, 120);
             homeButton.Text = "Home";
             homeButton.Font = new Font("Inter", 12F, FontStyle.Regular);
-            homeButton.BackColor = Color.Black;
+            homeButton.BackColor = Color.FromArgb(255, 180, 180, 180);
             homeButton.ForeColor = Color.White;
             homeButton.FlatStyle = FlatStyle.Flat;
             homeButton.FlatAppearance.BorderSize = 0;
@@ -123,7 +157,7 @@ namespace AuroPay.Views.Home
             transactionButton.Location = new Point(20, statsButton.Bottom + 10);
             transactionButton.Text = "Transactions";
             transactionButton.Font = new Font("Inter", 12F, FontStyle.Regular);
-            transactionButton.BackColor = Color.FromArgb(255, 180, 180, 180);
+            transactionButton.BackColor = Color.Black;
             transactionButton.ForeColor = Color.White;
             transactionButton.FlatStyle = FlatStyle.Flat;
             transactionButton.FlatAppearance.BorderSize = 0;
@@ -204,8 +238,8 @@ namespace AuroPay.Views.Home
 
             LayoutHelper.CreateRoundedCorners(homeButton, 16);
             LayoutHelper.CreateRoundedCorners(statsButton, 16);
-            LayoutHelper.CreateRoundedCorners(transactionButton, 16);
             LayoutHelper.CreateRoundedCorners(aboutButton, 16);
+            LayoutHelper.CreateRoundedCorners(transactionButton, 16);
             LayoutHelper.CreateRoundedCorners(profileButton, 16);
             LayoutHelper.CreateRoundedCorners(settingButton, 16);
             LayoutHelper.CreateRoundedCorners(logoutButton, 16);
@@ -225,119 +259,237 @@ namespace AuroPay.Views.Home
             contentPanel.BackColor = Color.White;
             contentPanel.Padding = new Padding(40);
 
-            greetingMessageLabel.AutoSize = true;
-            greetingMessageLabel.Font = new Font("Inter", 14F, FontStyle.Regular);
-            greetingMessageLabel.Text = "Welcome back, User!";
-            greetingMessageLabel.Location = new Point(40, 40);
+            transactionTitleLabel.AutoSize = true;
+            transactionTitleLabel.Font = new Font("Inter", 14F, FontStyle.Regular);
+            transactionTitleLabel.Text = "Transactions";
+            transactionTitleLabel.Location = new Point(40, 40); 
 
-            nameLabel.AutoSize = true;
-            nameLabel.Text = "Name";
-            nameLabel.Font = new Font("Inter", 12F, FontStyle.Bold);
-            nameLabel.Location = new Point(40, 100);
+            allTransacrtionButton.Size = new Size((int)(contentPanel.Width * 0.20), 40);
+            allTransacrtionButton.Location = new Point(40, transactionTitleLabel.Bottom + 20);
+            allTransacrtionButton.Text = "All";
+            allTransacrtionButton.Font = new Font("Inter", 12F, FontStyle.Regular);
+            allTransacrtionButton.BackColor = Color.Blue;
+            allTransacrtionButton.ForeColor = Color.White;
+            allTransacrtionButton.FlatStyle = FlatStyle.Flat;
+            allTransacrtionButton.FlatAppearance.BorderSize = 0;
+            allTransacrtionButton.Cursor = Cursors.Hand;            
+            allTransacrtionButton.Click += (sender, e) => PopulateTransaction("all", false);
+            allTransacrtionButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(allTransacrtionButton);
 
-            emailLabel.AutoSize = true;
-            emailLabel.Text = "Email";
-            emailLabel.Font = new Font("Inter", 9F);
-            emailLabel.Location = new Point(40, 130);
+            incomeTransacrtionButton.Size = new Size((int)(contentPanel.Width * 0.20), 40);
+            incomeTransacrtionButton.Location = new Point(allTransacrtionButton.Right + 10, transactionTitleLabel.Bottom + 20);
+            incomeTransacrtionButton.Text = "Income";
+            incomeTransacrtionButton.Font = new Font("Inter", 12F, FontStyle.Regular);
+            incomeTransacrtionButton.BackColor = Color.Green;
+            incomeTransacrtionButton.ForeColor = Color.White;
+            incomeTransacrtionButton.FlatStyle = FlatStyle.Flat;
+            incomeTransacrtionButton.FlatAppearance.BorderSize = 0;
+            incomeTransacrtionButton.Cursor = Cursors.Hand;            
+            incomeTransacrtionButton.Click += (sender, e) => PopulateTransaction("income", false);
+            incomeTransacrtionButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(incomeTransacrtionButton);
 
-            phoneLabel.AutoSize = true;
-            phoneLabel.Text = "Phone";
-            phoneLabel.Font = new Font("Inter", 9F);
-            phoneLabel.Location = new Point(40, 150);
+            expenseTransacrtionButton.Size = new Size((int)(contentPanel.Width * 0.20), 40);
+            expenseTransacrtionButton.Location = new Point(incomeTransacrtionButton.Right + 10, transactionTitleLabel.Bottom + 20);
+            expenseTransacrtionButton.Text = "Expense";
+            expenseTransacrtionButton.Font = new Font("Inter", 12F, FontStyle.Regular);
+            expenseTransacrtionButton.BackColor = Color.Orange;
+            expenseTransacrtionButton.ForeColor = Color.White;
+            expenseTransacrtionButton.FlatStyle = FlatStyle.Flat;
+            expenseTransacrtionButton.FlatAppearance.BorderSize = 0;
+            expenseTransacrtionButton.Cursor = Cursors.Hand;            
+            expenseTransacrtionButton.Click += (sender, e) => PopulateTransaction("expense", false);
+            expenseTransacrtionButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(expenseTransacrtionButton);
 
-            walletAndCurrencyLabel.AutoSize = true;
-            walletAndCurrencyLabel.Text = "Wallet Balance";
-            walletAndCurrencyLabel.Font = new Font("Inter", 10F, FontStyle.Bold);
-            walletAndCurrencyLabel.Location = new Point(40, 210);
+            debtTransacrtionButton.Size = new Size((int)(contentPanel.Width * 0.20), 40);
+            debtTransacrtionButton.Location = new Point(expenseTransacrtionButton.Right + 10, transactionTitleLabel.Bottom + 20);
+            debtTransacrtionButton.Text = "Debt";
+            debtTransacrtionButton.Font = new Font("Inter", 12F, FontStyle.Regular);
+            debtTransacrtionButton.BackColor = Color.Red;
+            debtTransacrtionButton.ForeColor = Color.White;
+            debtTransacrtionButton.FlatStyle = FlatStyle.Flat;
+            debtTransacrtionButton.FlatAppearance.BorderSize = 0;
+            debtTransacrtionButton.Cursor = Cursors.Hand;            
+            debtTransacrtionButton.Click += (sender, e) => PopulateTransaction("debt", false);
+            debtTransacrtionButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(debtTransacrtionButton);
 
-            joinedOnLabel.AutoSize = true;
-            joinedOnLabel.Text = "Joined Date";
-            joinedOnLabel.Font = new Font("Inter", 8F, FontStyle.Regular);
-            joinedOnLabel.Location = new Point(40, 240);
+            allTransactionTitleLabel.AutoSize = true;
+            allTransactionTitleLabel.Font = new Font("Inter", 12F, FontStyle.Bold);
+            allTransactionTitleLabel.Text = "All Transaction";
+            allTransactionTitleLabel.Location = new Point(40, expenseTransacrtionButton.Bottom + 20); 
 
-            settlementIncomeButton.Size = new Size((int)(contentPanel.Width * 0.20), 40);
-            settlementIncomeButton.Location = new Point(40, joinedOnLabel.Bottom + 50);
-            settlementIncomeButton.Text = "Add Saving";
-            settlementIncomeButton.Font = new Font("Inter", 12F, FontStyle.Regular);
-            settlementIncomeButton.BackColor = Color.Green;
-            settlementIncomeButton.ForeColor = Color.White;
-            settlementIncomeButton.FlatStyle = FlatStyle.Flat;
-            settlementIncomeButton.FlatAppearance.BorderSize = 0;
-            settlementIncomeButton.Cursor = Cursors.Hand;            
-            settlementIncomeButton.Click += (sender, e) => SettlementController.NavigateToSettlement(this, "income");
-            settlementIncomeButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(settlementIncomeButton);
+            filterSearchLabel.AutoSize = true;
+            filterSearchLabel.Font = new Font("Inter", 8F, FontStyle.Regular);
+            filterSearchLabel.Text = "Search";
+            filterSearchLabel.Location = new Point(40, allTransactionTitleLabel.Bottom + 20); 
 
-            settlementExpenseButton.Size = new Size((int)(contentPanel.Width * 0.20), 40);
-            settlementExpenseButton.Location = new Point(settlementIncomeButton.Right + 20, joinedOnLabel.Bottom + 50);
-            settlementExpenseButton.Text = "Add Expense";
-            settlementExpenseButton.Font = new Font("Inter", 12F, FontStyle.Regular);
-            settlementExpenseButton.BackColor = Color.Orange;
-            settlementExpenseButton.ForeColor = Color.White;
-            settlementExpenseButton.FlatStyle = FlatStyle.Flat;
-            settlementExpenseButton.FlatAppearance.BorderSize = 0;
-            settlementExpenseButton.Cursor = Cursors.Hand;            
-            settlementExpenseButton.Click += (sender, e) => SettlementController.NavigateToSettlement(this, "expense");
-            settlementExpenseButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(settlementExpenseButton);
+            filterSearchTextBox.Size = new Size(contentPanel.Width - 80, 55);
+            filterSearchTextBox.Height = 55;
+            filterSearchTextBox.BackColor = Color.White;
+            filterSearchTextBox.Font = new Font("Inter", 8F, FontStyle.Regular);
+            filterSearchTextBox.CornerRadius = 15;
+            filterSearchTextBox.Padding = new Padding(10, 15, 10, 15);
+            filterSearchTextBox.MaxLength = 32;
+            filterSearchTextBox.Location = new Point(40, filterSearchLabel.Bottom + 5); 
+            filterSearchTextBox.KeyPress += ValidateSearchInput;
 
-            settlementDebtButton.Size = new Size((int)(contentPanel.Width * 0.20), 40);
-            settlementDebtButton.Location = new Point(settlementExpenseButton.Right + 20, joinedOnLabel.Bottom + 50);
-            settlementDebtButton.Text = "Add Debt";
-            settlementDebtButton.Font = new Font("Inter", 12F, FontStyle.Regular);
-            settlementDebtButton.BackColor = Color.Red;
-            settlementDebtButton.ForeColor = Color.White;
-            settlementDebtButton.FlatStyle = FlatStyle.Flat;
-            settlementDebtButton.FlatAppearance.BorderSize = 0;
-            settlementDebtButton.Cursor = Cursors.Hand;            
-            settlementDebtButton.Click += (sender, e) => SettlementController.NavigateToSettlement(this, "debt");
-            settlementDebtButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(settlementDebtButton);
+            filterScopeLabel.Font = new Font("Inter", 8F, FontStyle.Regular);
+            filterScopeLabel.Text = "Scope";
+            filterScopeLabel.Size = new Size((int)(contentPanel.Width * 0.30), 15);
+            filterScopeLabel.Location = new Point(40, filterSearchTextBox.Bottom + 20); 
 
-            appQuitButton.Size = new Size((int)(contentPanel.Width * 0.20), 40);
-            appQuitButton.Location = new Point(settlementDebtButton.Right + 20, joinedOnLabel.Bottom + 50);
-            appQuitButton.Text = "Quit App";
-            appQuitButton.Font = new Font("Inter", 12F, FontStyle.Regular);
-            appQuitButton.BackColor = Color.Black;
-            appQuitButton.ForeColor = Color.White;
-            appQuitButton.FlatStyle = FlatStyle.Flat;
-            appQuitButton.FlatAppearance.BorderSize = 0;
-            appQuitButton.Cursor = Cursors.Hand;            
-            appQuitButton.Click += (sender, e) => SystemQuiteApp();
-            appQuitButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(appQuitButton);
+            filterTypeLabel.Font = new Font("Inter", 8F, FontStyle.Regular);
+            filterTypeLabel.Text = "Type";
+            filterScopeLabel.Size = new Size((int)(contentPanel.Width * 0.30), 15);
+            filterTypeLabel.Location = new Point(filterScopeLabel.Right + 10, filterSearchTextBox.Bottom + 20); 
 
-            pendingDebtLabel.AutoSize = true;
-            pendingDebtLabel.Text = "Pending Debts";
-            pendingDebtLabel.Font = new Font("Inter", 10, FontStyle.Bold);
-            pendingDebtLabel.TextAlign = ContentAlignment.MiddleCenter;
-            pendingDebtLabel.Visible = false;
-            pendingDebtLabel.Location = new Point(40, settlementIncomeButton.Bottom + 50);
+            filterStatusLabel.Font = new Font("Inter", 8F, FontStyle.Regular);
+            filterStatusLabel.Text = "Status";
+            filterScopeLabel.Size = new Size((int)(contentPanel.Width * 0.30), 15);
+            filterStatusLabel.Location = new Point(filterTypeLabel.Right + 10, filterSearchTextBox.Bottom + 20); 
 
+            filterScopeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            filterScopeComboBox.FormattingEnabled = true;
+            filterScopeComboBox.Location = new Point(40, filterScopeLabel.Bottom + 5);
+            filterScopeComboBox.Size = new Size((int)(contentPanel.Width * 0.30), 40);
+            filterScopeComboBox.DataSource = systemScopes;
+            filterScopeComboBox.DisplayMember = "Default"; 
+            filterScopeComboBox.ValueMember = "default";    
+            filterScopeComboBox.ForeColor = Color.Black;
+            filterScopeComboBox.BackColor = Color.White;
+
+            filterTypeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            filterTypeComboBox.FormattingEnabled = true;
+            filterTypeComboBox.Location = new Point(filterScopeComboBox.Right + 10, filterTypeLabel.Bottom + 5);
+            filterTypeComboBox.Size = new Size((int)(contentPanel.Width * 0.30), 40);
+            filterTypeComboBox.DataSource = systemTypes;
+            filterTypeComboBox.DisplayMember = "Default"; 
+            filterTypeComboBox.ValueMember = "default";    
+            filterTypeComboBox.ForeColor = Color.Black;
+            filterTypeComboBox.BackColor = Color.White;
+
+            filterStatusComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            filterStatusComboBox.FormattingEnabled = true;
+            filterStatusComboBox.Location = new Point(filterTypeComboBox.Right + 10, filterStatusLabel.Bottom + 5);
+            filterStatusComboBox.Size = new Size((int)(contentPanel.Width * 0.30), 40);
+            filterStatusComboBox.DataSource = systemStatus;
+            filterStatusComboBox.DisplayMember = "Default"; 
+            filterStatusComboBox.ValueMember = "default";    
+            filterStatusComboBox.ForeColor = Color.Black;
+            filterStatusComboBox.BackColor = Color.White;
+            
+            filterStartDateTimeLabel.Font = new Font("Inter", 8F, FontStyle.Regular);
+            filterStartDateTimeLabel.Text = "Start Date";
+            filterStartDateTimeLabel.Size = new Size((int)(contentPanel.Width * 0.45), 15);
+            filterStartDateTimeLabel.Location = new Point(40, filterStatusComboBox.Bottom + 20); 
+
+            filterEndDateTimeLabel.Font = new Font("Inter", 8F, FontStyle.Regular);
+            filterEndDateTimeLabel.Text = "End Date";
+            filterEndDateTimeLabel.Size = new Size((int)(contentPanel.Width * 0.45), 15);
+            filterEndDateTimeLabel.Location = new Point(filterStartDateTimeLabel.Right + 10, filterStatusComboBox.Bottom + 20); 
+
+            filterStartDateTimePicker.Size = new Size((int)(contentPanel.Width * 0.45), 40);
+            filterStartDateTimePicker.Location = new Point(40, filterStartDateTimeLabel.Bottom + 10);
+            filterStartDateTimePicker.Value = DateTime.Now.AddYears(-1);
+
+            filterEndDateTimePicker.Size = new Size((int)(contentPanel.Width * 0.45), 40);
+            filterEndDateTimePicker.Location = new Point(filterStartDateTimePicker.Right + 10, filterStartDateTimeLabel.Bottom + 10);
+
+            filterButton.Size = new Size((int)(contentPanel.Width * 0.45), 40);
+            filterButton.Location = new Point(40, filterStartDateTimePicker.Bottom + 20);
+            filterButton.Text = "Filter";
+            filterButton.Font = new Font("Inter", 12F, FontStyle.Regular);
+            filterButton.BackColor = Color.Black;
+            filterButton.ForeColor = Color.White;
+            filterButton.FlatStyle = FlatStyle.Flat;
+            filterButton.FlatAppearance.BorderSize = 0;
+            filterButton.Cursor = Cursors.Hand;            
+            filterButton.Click += (sender, e) => FilterButtonClicked();
+            filterButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(filterButton);
+
+            filterClearButton.Size = new Size((int)(contentPanel.Width * 0.45), 40);
+            filterClearButton.Location = new Point(filterButton.Right + 10, filterStartDateTimePicker.Bottom + 20);
+            filterClearButton.Text = "Reset";
+            filterClearButton.Font = new Font("Inter", 12F, FontStyle.Regular);
+            filterClearButton.BackColor = Color.Red;
+            filterClearButton.ForeColor = Color.White;
+            filterClearButton.FlatStyle = FlatStyle.Flat;
+            filterClearButton.FlatAppearance.BorderSize = 0;
+            filterClearButton.Cursor = Cursors.Hand;            
+            filterClearButton.Click += (sender, e) => FilterClearButtonClicked();
+            filterClearButton.SizeChanged += (sender, e) => LayoutHelper.CreateRoundedCorners(filterClearButton);
+
+            noTransactionsPictureBox.AutoSize = true;
+            noTransactionsPictureBox.Image = Image.FromFile("Resources/Images/error.png");
+            noTransactionsPictureBox.SizeMode = PictureBoxSizeMode.Zoom;
+            noTransactionsPictureBox.Visible = false;
+            noTransactionsPictureBox.Size = new Size((int)(contentPanel.Width * 0.40), (int)(contentPanel.Height * 0.40));
+            noTransactionsPictureBox.Location = new Point(
+                (contentPanel.Width - noTransactionsPictureBox.Width) / 2,
+                filterButton.Bottom + 100
+            );
+
+            noTransactionsLabel.AutoSize = true;
+            noTransactionsLabel.Text = "No Transactions";
+            noTransactionsLabel.Font = new Font("Inter", 10, FontStyle.Bold);
+            noTransactionsLabel.TextAlign = ContentAlignment.MiddleCenter;
+            noTransactionsLabel.Visible = false;
+            noTransactionsLabel.Padding = new Padding(0, 0, 0, 50);
+            noTransactionsLabel.Location = new Point(
+                (contentPanel.Width - noTransactionsLabel.PreferredWidth) / 2,
+                noTransactionsPictureBox.Bottom + 10 
+            );
+
+            
             dataGridViewTransactions.AutoSize = true;
             dataGridViewTransactions.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewTransactions.Location = new Point(40, pendingDebtLabel.Bottom + 20); 
-            dataGridViewTransactions.Size = new Size(contentPanel.Width - 80, contentPanel.Height - pendingDebtLabel.Bottom - 60);
+            dataGridViewTransactions.Location = new Point(40, filterButton.Bottom + 20); 
+            dataGridViewTransactions.Size = new Size(contentPanel.Width - 80, contentPanel.Height - filterButton.Bottom - 60);
             dataGridViewTransactions.BackgroundColor = Color.White;
             dataGridViewTransactions.BorderStyle = BorderStyle.None;
-            dataGridViewTransactions.Visible = false;
 
             actionColumn.Name = "Action";
             actionColumn.HeaderText = "Action";
 
-            LayoutHelper.CreateRoundedCorners(settlementIncomeButton, 16);
-            LayoutHelper.CreateRoundedCorners(settlementExpenseButton, 16);
-            LayoutHelper.CreateRoundedCorners(settlementDebtButton, 16);
-            LayoutHelper.CreateRoundedCorners(appQuitButton, 16);            
+            LayoutHelper.CreateRoundedCorners(allTransacrtionButton, 16);
+            LayoutHelper.CreateRoundedCorners(incomeTransacrtionButton, 16);
+            LayoutHelper.CreateRoundedCorners(expenseTransacrtionButton, 16);
+            LayoutHelper.CreateRoundedCorners(debtTransacrtionButton, 16);
 
-            contentPanel.Controls.Add(greetingMessageLabel);
-            contentPanel.Controls.Add(nameLabel);
-            contentPanel.Controls.Add(emailLabel);
-            contentPanel.Controls.Add(phoneLabel);
-            contentPanel.Controls.Add(walletAndCurrencyLabel);
-            contentPanel.Controls.Add(joinedOnLabel);
-            contentPanel.Controls.Add(settlementExpenseButton);
-            contentPanel.Controls.Add(settlementIncomeButton);
-            contentPanel.Controls.Add(settlementDebtButton);    
-            contentPanel.Controls.Add(appQuitButton);    
+            LayoutHelper.CreateRoundedCorners(filterButton, 16);
+            LayoutHelper.CreateRoundedCorners(filterClearButton, 16);
 
-            contentPanel.Controls.Add(pendingDebtLabel);             
+            contentPanel.Controls.Add(transactionTitleLabel);
+
+            contentPanel.Controls.Add(allTransacrtionButton);
+            contentPanel.Controls.Add(incomeTransacrtionButton);
+            contentPanel.Controls.Add(expenseTransacrtionButton);
+            contentPanel.Controls.Add(debtTransacrtionButton);
+
+            contentPanel.Controls.Add(allTransactionTitleLabel);
+
+            contentPanel.Controls.Add(filterSearchLabel);
+            contentPanel.Controls.Add(filterSearchTextBox);
+
+            contentPanel.Controls.Add(filterScopeLabel);
+            contentPanel.Controls.Add(filterTypeLabel);
+            contentPanel.Controls.Add(filterStatusLabel);
+
+            contentPanel.Controls.Add(filterScopeComboBox);
+            contentPanel.Controls.Add(filterTypeComboBox);
+            contentPanel.Controls.Add(filterStatusComboBox);
+
+            contentPanel.Controls.Add(filterStartDateTimeLabel);
+            contentPanel.Controls.Add(filterEndDateTimeLabel);
+
+            contentPanel.Controls.Add(filterStartDateTimePicker);
+            contentPanel.Controls.Add(filterEndDateTimePicker);
+
+            contentPanel.Controls.Add(filterButton);
+            contentPanel.Controls.Add(filterClearButton);            
+
+            contentPanel.Controls.Add(noTransactionsLabel);
+            contentPanel.Controls.Add(noTransactionsPictureBox);
+
             contentPanel.Controls.Add(dataGridViewTransactions);
 
             this.Controls.Add(sidebarPanel);
@@ -350,8 +502,7 @@ namespace AuroPay.Views.Home
 
             this.ResumeLayout();
         }
-
-        private void PopulateTransaction(string target = "debt", bool isSearch = false)
+        private void PopulateTransaction(string target = "all", bool isSearch = false)
         {
             int userId = currentUser.Id;
             
@@ -363,19 +514,23 @@ namespace AuroPay.Views.Home
                 }
                 else
                 {
-                    allTransactionData = TransactionService.GetTransactionsByScope(userId, target, "pending");
+                    allTransactionData = TransactionService.GetTransactionsByScope(userId, target);
                 }
             }
 
             if (allTransactionData == null || !allTransactionData.Any())
             {
-                pendingDebtLabel.Visible = false;
+                noTransactionsLabel.Visible = true;
+                noTransactionsPictureBox.Visible = true;
+
                 dataGridViewTransactions.Visible = false;
                 
             }
             else
             {
-                pendingDebtLabel.Visible = true;
+                noTransactionsLabel.Visible = false;
+                noTransactionsPictureBox.Visible = false;
+
                 dataGridViewTransactions.Visible = true;
                 
                 dataGridViewTransactions.DataSource = allTransactionData;
@@ -621,6 +776,73 @@ namespace AuroPay.Views.Home
                     }
                 }
             };
+        }
+        private void FilterButtonClicked()
+        {
+            int userId = currentUser.Id;
+
+            string searchKeyword = filterSearchTextBox.Text;
+
+            var selectedType = (Filter)filterTypeComboBox.SelectedItem;
+            var selectedScope = (Filter)filterScopeComboBox.SelectedItem;
+            var selectedStatus = (Filter)filterStatusComboBox.SelectedItem;
+
+            string scope = selectedScope.Code;
+            string type = selectedType.Code;
+            string status = selectedStatus.Code;          
+
+            DateTime startDateTime = filterStartDateTimePicker.Value;
+            DateTime endDateTime = filterEndDateTimePicker.Value;
+
+            DateTime startDate = new DateTime(startDateTime.Year, startDateTime.Month, startDateTime.Day, 0, 0, 0);
+            DateTime endDate = new DateTime(endDateTime.Year, endDateTime.Month, endDateTime.Day, 23, 59, 59);
+
+
+            if (startDateTime > endDateTime)
+            {
+                MessageBox.Show(
+                    "Start date cannot be after end date.", 
+                    "Invalid Date Range", 
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return; 
+            }
+
+            var transactions = TransactionService.GetTransactionsByMixedFilter(
+                userId: userId,
+                searchKeyword: searchKeyword,
+                scope: (scope == "default") ? null : scope,
+                status: (status == "default") ? null : status,
+                type: (type == "default") ? null : type,
+                startDate: startDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                endDate: endDate.ToString("yyyy-MM-dd HH:mm:ss")
+            );
+
+            allTransactionData = transactions;  
+            PopulateTransaction(isSearch: true);          
+        }
+        private void clearSearchFilter()
+        {
+            filterSearchTextBox.Clear();
+
+            filterTypeComboBox.DisplayMember = "Default"; 
+            filterTypeComboBox.ValueMember = "default";   
+
+            filterScopeComboBox.DisplayMember = "Default"; 
+            filterScopeComboBox.ValueMember = "default";   
+
+            filterStatusComboBox.DisplayMember = "Default"; 
+            filterStatusComboBox.ValueMember = "default";               
+
+            filterStartDateTimePicker.Value = DateTime.Now.AddYears(-1);
+            filterEndDateTimePicker.Value = DateTime.Now;
+        }
+        private void FilterClearButtonClicked()
+        {
+            clearSearchFilter();
+            PopulateTransaction();
         }
     }
 }

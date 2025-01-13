@@ -1,3 +1,5 @@
+using AuroPay.Controllers;
+
 namespace AuroPay.Views.Error
 {
     public partial class ErrorScreen : Form
@@ -6,8 +8,10 @@ namespace AuroPay.Views.Error
         {
             InitializeComponent();
         }
-
-        private void AdjustLayout(PictureBox logoPictureBox, Label appNameLabel, Label copyrightLabel)
+        private void HomeButtonClicked(object sender, EventArgs e){
+            HomeController.NavigateToHome(this);
+        }
+        private void AdjustLayout(PictureBox logoPictureBox, Label appNameLabel, Label copyrightLabel, Button homeButton)
         {
             logoPictureBox.Width = (int)(this.ClientSize.Width * 0.6); 
             logoPictureBox.Height = (int)(logoPictureBox.Width * 0.4); 
@@ -20,6 +24,12 @@ namespace AuroPay.Views.Error
             appNameLabel.Location = new Point(
                 (this.ClientSize.Width - appNameLabel.Width) / 2,
                 logoPictureBox.Bottom + 20
+            );
+
+            homeButton.Size = new Size((int)(contentPanel.Width * 0.8), 40);
+            homeButton.Location = new Point(
+                (ClientSize.Width - homeButton.Width) / 2,
+                appNameLabel.Bottom + 20
             );
 
             copyrightLabel.Location = new Point(

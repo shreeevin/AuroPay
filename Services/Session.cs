@@ -28,7 +28,7 @@ namespace AuroPay.Services
         }
 
         public bool IsLoggedIn()
-        {
+        {            
             return !string.IsNullOrEmpty(Username);
         }
     }
